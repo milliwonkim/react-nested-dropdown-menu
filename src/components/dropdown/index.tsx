@@ -13,6 +13,7 @@ import React, {
 import "../../styles.css";
 import { getMenuPositionClassName } from "./utils";
 import { useClickAway } from "../../hooks/use-click-away";
+import { Grid } from "@mui/material";
 
 export interface DropdownItem<TValue = undefined> {
   label: string;
@@ -36,6 +37,88 @@ export interface DropdownProps<TValue> {
   closeOnScroll?: boolean;
 }
 
+const rootMenuStyle = {
+  position: "absolute",
+  top: "100%",
+  right: 0,
+  margin: "7px 0",
+  zIndex: 10,
+};
+
+const menuStyle = {
+  background: "#fff",
+  border: "1px solid gray",
+  boxShadow: "0 4px 17px rgba(0, 0, 0, 0.05)",
+  borderRadius: "4px",
+  padding: "4px 0",
+  listStyle: "none",
+};
+
+type PositionType =
+  | "rnd__menu--top"
+  | "rnd__menu--bottom"
+  | "rnd__menu--right"
+  | "rnd__menu--left"
+  | "";
+
+const getPosition = (position: PositionType) => {
+  switch (position) {
+    case "rnd__menu--top":
+      return {
+        top: "auto",
+        bottom: "100%",
+      };
+    case "rnd__menu--bottom":
+      return {
+        top: "100%",
+        bottom: "auto",
+      };
+    case "rnd__menu--left":
+      return {
+        left: "auto",
+        right: 0,
+      };
+    case "rnd__menu--right":
+      return {
+        left: 0,
+        right: "auto",
+      };
+    case "":
+      return {};
+    default:
+      return {};
+  }
+};
+
+const getSubmenuPosition = (position: PositionType) => {
+  switch (position) {
+    case "rnd__menu--top":
+      return {
+        top: "auto",
+        bottom: "0",
+      };
+    case "rnd__menu--bottom":
+      return {
+        top: "0",
+        bottom: "auto",
+      };
+    case "rnd__menu--left":
+      return {
+        left: "auto",
+        right: "100%",
+      };
+    case "rnd__menu--right":
+      return {
+        left: "100%",
+        right: "auto",
+      };
+    case "":
+      return {};
+    default:
+      return {};
+  }
+};
+
 export const Dropdown = <TValue,>({
   items,
   containerWidth = 300,
@@ -47,7 +130,7 @@ export const Dropdown = <TValue,>({
 }: DropdownProps<TValue>): React.ReactElement => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [menuPositionClassName, setMenuPositionClassName] =
-    useState<string>("");
+    useState<PositionType>("");
   const [dropdownIsOpen, setDropdownOpen] = useState(false);
 
   const toggleDropdown = useCallback(
@@ -104,7 +187,9 @@ export const Dropdown = <TValue,>({
 
   useLayoutEffect(() => {
     if (dropdownIsOpen && rootMenuRef.current) {
-      setMenuPositionClassName(getMenuPositionClassName(rootMenuRef.current));
+      setMenuPositionClassName(
+        getMenuPositionClassName(rootMenuRef.current) as PositionType
+      );
     }
     return () => {
       if (dropdownIsOpen) {
@@ -114,10 +199,27 @@ export const Dropdown = <TValue,>({
   }, [dropdownIsOpen]);
 
   return (
-    <div className={clsx("rnd", className)} ref={containerRef}>
+    <Grid
+      sx={{
+        position: "relative",
+        width: "fit-content",
+        boxSizing: "border-box",
+        "& *": {
+          boxSizing: "border-box",
+        },
+      }}
+      className={clsx("rnd", className)}
+      ref={containerRef}
+    >
       {children(childrenProps)}
       {dropdownIsOpen && (
-        <ul
+        <Grid
+          component="ul"
+          sx={{
+            ...rootMenuStyle,
+            ...menuStyle,
+            ...getPosition(menuPositionClassName),
+          }}
           className={`rnd__root-menu rnd__menu ${menuPositionClassName}`}
           style={{ width: containerWidth }}
           ref={rootMenuRef}
@@ -130,9 +232,9 @@ export const Dropdown = <TValue,>({
               renderOption={renderOption}
             />
           ))}
-        </ul>
+        </Grid>
       )}
-    </div>
+    </Grid>
   );
 };
 
@@ -151,7 +253,7 @@ const Option = <TValue,>({
   const hasSubmenu = !!items;
   const itemsContainerWidth = option.itemsContainerWidth ?? 150;
   const [menuPositionClassName, setMenuPositionClassName] =
-    useState<string>("");
+    useState<PositionType>("");
   const [submenuIsOpen, setSubmenuOpen] = useState(false);
 
   const handleClick = React.useCallback(
@@ -174,7 +276,9 @@ const Option = <TValue,>({
         const isHTMLElement = entry.target instanceof HTMLElement;
         if (isHTMLElement) {
           setSubmenuOpen(entry.target.offsetWidth > 0);
-          setMenuPositionClassName(getMenuPositionClassName(entry.target));
+          setMenuPositionClassName(
+            getMenuPositionClassName(entry.target) as PositionType
+          );
         }
       });
     });
@@ -192,8 +296,44 @@ const Option = <TValue,>({
 
   const iconAfter = hasSubmenu ? chevronNode : option.iconAfter;
 
+  const submenuStyle = {
+    position: "absolute",
+    display: "none",
+    opacity: 0,
+    left: "100%",
+    top: 0,
+  };
+
+  const submenuOpenedStyle = submenuIsOpen
+    ? {
+        opacity: 1,
+      }
+    : {};
+
+  const optionStyle = {
+    padding: "12px 15px",
+    cursor: "pointer",
+    wordBreak: "break-word",
+    position: "relative",
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+  };
+
+  const optionDisabledStyle = option.disabled
+    ? {
+        cursor: "not-allowed",
+        opacity: "0.4",
+      }
+    : {};
+
   return (
-    <li
+    <Grid
+      component="li"
+      sx={{
+        ...optionStyle,
+        ...optionDisabledStyle,
+      }}
       className={clsx("rnd__option", option.className, {
         "rnd__option--disabled": option.disabled,
         "rnd__option--with-menu": hasSubmenu,
@@ -202,7 +342,14 @@ const Option = <TValue,>({
       onKeyUp={handleClick}
     >
       {hasSubmenu && (
-        <ul
+        <Grid
+          component="ul"
+          sx={{
+            ...menuStyle,
+            ...submenuStyle,
+            ...submenuOpenedStyle,
+            ...getSubmenuPosition(menuPositionClassName),
+          }}
           className={clsx(`rnd__menu rnd__submenu ${menuPositionClassName}`, {
             "rnd__submenu--opened": submenuIsOpen,
           })}
@@ -217,7 +364,7 @@ const Option = <TValue,>({
               renderOption={renderOption}
             />
           ))}
-        </ul>
+        </Grid>
       )}
       {renderOption && renderOption(option)}
       {!renderOption && (
@@ -227,7 +374,17 @@ const Option = <TValue,>({
               {option.iconBefore}
             </div>
           )}
-          <p className="rnd__option-label">{option.label}</p>
+          <Grid
+            component="p"
+            sx={{
+              fontWeight: 600,
+              fontSize: "11px",
+              margin: 0,
+            }}
+            // className="rnd__option-label"
+          >
+            {option.label}
+          </Grid>
           {iconAfter && (
             <div className="rnd__option-icon rnd__option-icon--right">
               {iconAfter}
@@ -235,7 +392,7 @@ const Option = <TValue,>({
           )}
         </>
       )}
-    </li>
+    </Grid>
   );
 };
 
