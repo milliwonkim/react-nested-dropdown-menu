@@ -10,7 +10,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import "../../styles.css";
 import { getMenuPositionClassName } from "./utils";
 import { useClickAway } from "../../hooks/use-click-away";
 import { Grid, SxProps, Theme } from "@mui/material";
@@ -318,7 +317,18 @@ const Option = <TValue,>({
     width: "100%",
     display: "flex",
     alignItems: "center",
+    "&:not(.rnd__option--disabled):hover": {
+      background: "gray",
+    },
   };
+
+  const optionWithMenuStyle: SxProps<Theme> = hasSubmenu
+    ? {
+        "&:hover > .rnd__submenu": {
+          display: "block",
+        },
+      }
+    : {};
 
   const optionDisabledStyle: SxProps<Theme> = option.disabled
     ? {
@@ -327,12 +337,21 @@ const Option = <TValue,>({
       }
     : {};
 
+  const optionIconStyle = {
+    width: "16px",
+    ehgit: "16px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  };
+
   return (
     <Grid
       component="li"
       sx={{
         ...optionStyle,
         ...optionDisabledStyle,
+        ...optionWithMenuStyle,
       }}
       className={clsx("rnd__option", option.className, {
         "rnd__option--disabled": option.disabled,
@@ -370,9 +389,12 @@ const Option = <TValue,>({
       {!renderOption && (
         <>
           {option.iconBefore && (
-            <div className="rnd__option-icon rnd__option-icon--left">
+            <Grid
+              sx={{ marginRight: "7px", ...optionIconStyle }}
+              className="rnd__option-icon rnd__option-icon--left"
+            >
               {option.iconBefore}
-            </div>
+            </Grid>
           )}
           <Grid
             component="p"
@@ -381,14 +403,16 @@ const Option = <TValue,>({
               fontSize: "11px",
               margin: 0,
             }}
-            // className="rnd__option-label"
           >
             {option.label}
           </Grid>
           {iconAfter && (
-            <div className="rnd__option-icon rnd__option-icon--right">
+            <Grid
+              sx={{ marginLeft: "auto", ...optionIconStyle }}
+              className="rnd__option-icon rnd__option-icon--right"
+            >
               {iconAfter}
-            </div>
+            </Grid>
           )}
         </>
       )}
