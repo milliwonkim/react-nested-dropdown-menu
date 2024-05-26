@@ -13,7 +13,7 @@ import React, {
 import "../../styles.css";
 import { getMenuPositionClassName } from "./utils";
 import { useClickAway } from "../../hooks/use-click-away";
-import { Grid } from "@mui/material";
+import { Grid, SxProps, Theme } from "@mui/material";
 
 export interface DropdownItem<TValue = undefined> {
   label: string;
@@ -37,7 +37,7 @@ export interface DropdownProps<TValue> {
   closeOnScroll?: boolean;
 }
 
-const rootMenuStyle = {
+const rootMenuStyle: SxProps<Theme> = {
   position: "absolute",
   top: "100%",
   right: 0,
@@ -45,7 +45,7 @@ const rootMenuStyle = {
   zIndex: 10,
 };
 
-const menuStyle = {
+const menuStyle: SxProps<Theme> = {
   background: "#fff",
   border: "1px solid gray",
   boxShadow: "0 4px 17px rgba(0, 0, 0, 0.05)",
@@ -61,7 +61,7 @@ type PositionType =
   | "rnd__menu--left"
   | "";
 
-const getPosition = (position: PositionType) => {
+const getPosition = (position: PositionType): SxProps<Theme> => {
   switch (position) {
     case "rnd__menu--top":
       return {
@@ -90,7 +90,7 @@ const getPosition = (position: PositionType) => {
   }
 };
 
-const getSubmenuPosition = (position: PositionType) => {
+const getSubmenuPosition = (position: PositionType): SxProps<Theme> => {
   switch (position) {
     case "rnd__menu--top":
       return {
@@ -296,7 +296,7 @@ const Option = <TValue,>({
 
   const iconAfter = hasSubmenu ? chevronNode : option.iconAfter;
 
-  const submenuStyle = {
+  const submenuStyle: SxProps<Theme> = {
     position: "absolute",
     display: "none",
     opacity: 0,
@@ -304,13 +304,13 @@ const Option = <TValue,>({
     top: 0,
   };
 
-  const submenuOpenedStyle = submenuIsOpen
+  const submenuOpenedStyle: SxProps<Theme> = submenuIsOpen
     ? {
         opacity: 1,
       }
     : {};
 
-  const optionStyle = {
+  const optionStyle: SxProps<Theme> = {
     padding: "12px 15px",
     cursor: "pointer",
     wordBreak: "break-word",
@@ -320,7 +320,7 @@ const Option = <TValue,>({
     alignItems: "center",
   };
 
-  const optionDisabledStyle = option.disabled
+  const optionDisabledStyle: SxProps<Theme> = option.disabled
     ? {
         cursor: "not-allowed",
         opacity: "0.4",
